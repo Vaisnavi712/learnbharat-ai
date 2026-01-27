@@ -47,10 +47,6 @@ if course_code:
     else:
         course_name = course_code
         st.warning("Course not found. Using course code as topic.")
-
-# -------------------------
-# AI Generator
-# -------------------------
 def ai_generate(course, focus, language, syllabus):
     prompt = f"""
 You are an expert Indian university professor and exam coach.
@@ -63,23 +59,21 @@ Official Syllabus:
 {syllabus}
 
 Instructions:
-- Fully generate content ONLY for the selected outputs.
-- For unselected outputs, add a short section called "Recommended Next".
-- If Notes are requested, generate unit-wise easy explanations.
-- If Videos are requested, recommend NPTEL and Indian YouTube channels WITH LINKS.
-- If Exam Questions are requested, generate GATE and university-style questions.
-- If Project Ideas are requested, suggest 3–5 practical projects with difficulty levels.
+- If Notes are requested, generate unit-wise easy explanations
+- If Videos are requested, recommend NPTEL + Indian YouTube channels
+- If Exam Questions are requested, generate GATE + university-style questions
+- If Project Ideas are requested, suggest 3–5 practical projects with difficulty levels
+- Also recommend remaining learning modes not selected
 
-Format clearly using headings and bullet points.
+Format clearly with headings and bullet points.
 """
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-
-        messages=[{"role": "user", "content": prompt}]
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=prompt
     )
 
-    return response.choices[0].message.content
+    return response.output_text
 
 # -------------------------
 # Readiness Score
