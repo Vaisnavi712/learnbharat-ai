@@ -6,7 +6,7 @@ from syllabus_data import SYLLABUS
 # -------------------------
 # OpenAI Client
 # -------------------------
-client = OpenAI()
+client = OpenAI(api_key="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")
 
 # -------------------------
 # Page UI
