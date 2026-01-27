@@ -47,10 +47,6 @@ if course_code:
     else:
         course_name = course_code
         st.warning("Course not found. Using course code as topic.")
-
-# -------------------------
-# AI Generator
-# -------------------------
 def ai_generate(course, focus, language, syllabus):
     prompt = f"""
 You are an expert Indian university professor and exam coach.
@@ -73,12 +69,30 @@ Instructions:
 Format clearly using headings and bullet points.
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",   # safer, cheaper model
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=800           # limit response size to avoid quota burn
+        )
+        return response.choices[0].message.content
 
-    return response.choices[0].message.content
+    except Exception as e:
+        # Fallback if API fails (rate limit, quota, etc.)
+        return f"""
+⚠️ AI service unavailable right now (Rate Limit or Quota exceeded).
+Switching to offline mode.
+
+Course: {course}
+Focus: {", ".join(focus)}
+Language: {language}
+
+Sample output:
+- Notes: Unit-wise simplified explanations
+- Videos: NPTEL / YouTube references
+- Exam Questions: GATE-style practice
+- Project Ideas: Mini projects with real-world use cases
+"""
 
 # -------------------------
 # Readiness Score
