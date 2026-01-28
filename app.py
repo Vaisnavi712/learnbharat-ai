@@ -4,14 +4,15 @@ from fpdf import FPDF
 from syllabus_data import SYLLABUS
 
 # -------------------------
-# OpenAI Client
+# OpenAI Client (SAFE)
 # -------------------------
-client = OpenAI(api_key="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")
+client = OpenAI()  # Reads OPENAI_API_KEY from env / Streamlit Secrets
 
 # -------------------------
-# Page UI
+# Page Config
 # -------------------------
 st.set_page_config(page_title="LearnBharat AI", page_icon="📚")
+
 st.title("LearnBharat AI 📚")
 st.subheader("Your AI Study Assistant for Indian Universities")
 st.markdown("---")
@@ -34,7 +35,7 @@ language = st.selectbox(
 st.markdown("---")
 
 # -------------------------
-# Load syllabus
+# Load Syllabus
 # -------------------------
 syllabus = ""
 course_name = ""
@@ -47,6 +48,10 @@ if course_code:
     else:
         course_name = course_code
         st.warning("Course not found. Using course code as topic.")
+
+# -------------------------
+# AI Generator
+# -------------------------
 def ai_generate(course, focus, language, syllabus):
     prompt = f"""
 You are an expert Indian university professor and exam coach.
@@ -69,14 +74,14 @@ Format clearly with headings and bullet points.
 """
 
     response = client.responses.create(
-        model="gpt-4.1-mini",
+        model="gpt-4o-mini",
         input=prompt
     )
 
     return response.output_text
 
 # -------------------------
-# Readiness Score
+# Exam Readiness Score
 # -------------------------
 def calculate_readiness(focus):
     score = 0
@@ -121,39 +126,43 @@ if st.button("Generate 🚀"):
 
     else:
         with st.spinner("Generating personalized study content..."):
+            try:
+                output = ai_generate(course_name, focus, language, syllabus)
 
-            output = ai_generate(course_name, focus, language, syllabus)
+                st.success("Done!")
+                st.markdown("## 📘 Generated Study Material")
+                st.markdown(output)
 
-            st.success("Done!")
-            st.markdown("## 📘 Generated Study Material")
-            st.markdown(output)
+                # -------------------------
+                # Exam Readiness Display
+                # -------------------------
+                score = calculate_readiness(focus)
 
-            # -------------------------
-            # Exam Readiness
-            # -------------------------
-            score = calculate_readiness(focus)
+                st.markdown("## 📊 Exam Readiness Score")
+                st.progress(score / 100)
+                st.metric("Readiness Level", f"{score}%")
 
-            st.markdown("## 📊 Exam Readiness Score")
-            st.progress(score / 100)
-            st.metric("Readiness Level", f"{score}%")
+                if score < 50:
+                    st.warning("Focus more on notes and exam questions.")
+                elif score < 80:
+                    st.info("Good progress! Add projects or more practice.")
+                else:
+                    st.success("Excellent! You are exam-ready 🚀")
 
-            if score < 50:
-                st.warning("Focus more on notes and exam questions.")
-            elif score < 80:
-                st.info("Good progress! Add projects or more practice.")
-            else:
-                st.success("Excellent! You are exam-ready 🚀")
+                # -------------------------
+                # PDF Download
+                # -------------------------
+                pdf = create_pdf(output)
+                pdf.output("study_material.pdf")
 
-            # -------------------------
-            # PDF Download
-            # -------------------------
-            pdf = create_pdf(output)
-            pdf.output("study_material.pdf")
+                with open("study_material.pdf", "rb") as f:
+                    st.download_button(
+                        "📄 Download as PDF",
+                        f,
+                        file_name="LearnBharat_AI_Notes.pdf"
+                    )
 
-            with open("study_material.pdf", "rb") as f:
-                st.download_button(
-                    "📄 Download as PDF",
-                    f,
-                    file_name="LearnBharat_AI_Notes.pdf"
-                )
+            except Exception as e:
+                st.error("❌ AI service error. Please check API key or try again later.")
+                st.stop()
 
