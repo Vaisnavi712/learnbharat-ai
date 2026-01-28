@@ -163,6 +163,7 @@ if st.button("Generate 🚀"):
                     )
 
             except Exception as e:
-                st.error("❌ AI service error. Please check API key or try again later.")
-                st.stop()
+    		st.error("AI error:")
+    		st.code(str(e))
+    		st.stop()
 
