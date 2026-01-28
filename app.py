@@ -6,7 +6,7 @@ from syllabus_data import SYLLABUS
 # -------------------------
 # OpenAI Client (SAFE)
 # -------------------------
-client = OpenAI()  # Reads OPENAI_API_KEY from env / Streamlit Secrets
+client = OpenAI()  # Reads OPENAI_API_KEY from Streamlit Secrets
 
 # -------------------------
 # Page Config
@@ -78,7 +78,8 @@ Format clearly with headings and bullet points.
         input=prompt
     )
 
-    return response.output_text
+    # Safe text extraction
+    return response.output[0].content[0].text
 
 # -------------------------
 # Exam Readiness Score
@@ -163,7 +164,8 @@ if st.button("Generate 🚀"):
                     )
 
             except Exception as e:
-    		st.error("AI error:")
-    		st.code(str(e))
-    		st.stop()
+                st.error("AI error:")
+                st.code(str(e))
+                st.stop()
+
 
